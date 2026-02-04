@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CocoaChain - Blockchain Cocoa Trading</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #e2e8f0;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+header {
+  text-align: center;
+  padding: 40px 20px;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+}
+
+h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+  font-size: 1.1em;
+  opacity: 0.9;
+  margin-top: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.card-full {
+  grid-column: 1 / -1;
+}
+
+.card-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  color: #a78bfa;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: #cbd5e1;
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  color: white;
+  font-size: 1em;
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+input.error {
+  border-color: #ef4444;
+}
+
+input::placeholder {
+  color: #64748b;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.85em;
+  margin-top: 5px;
+  display: none;
+}
+
+.error-message.show {
+  display: block;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 25px;
+}
+
+button {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #0f172a;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.btn-view {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+  font-size: 2em;
+  font-weight: bold;
+  color: #4ade80;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  color: #94a3b8;
+}
+
+.notification {
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-weight: 500;
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+
+.notification.show {
+  display: block;
+}
+
+.notification.success {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+}
+
+.notification.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.notification.info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pending-sales {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sale-item {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sale-info {
+  flex: 1;
+}
+
+.sale-info div {
+  margin-bottom: 5px;
+  font-size: 0.9em;
+}
+
+.sale-info strong {
+  color: #a78bfa;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+}
+
+.empty-state .icon {
+  font-size: 3em;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.block-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.block-card {
+  background: rgba(15, 23, 42, 0.6);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  border-left: 4px solid #7c3aed;
+}
+
+.block-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.block-index {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #a78bfa;
+}
+
+.block-timestamp {
+  font-size: 0.85em;
+  color: #94a3b8;
+}
+
+.block-hash {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8em;
+  color: #4ade80;
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+
+.block-transactions {
+  margin-top: 10px;
+}
+
+.transaction {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+}
+
+.loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.6s linear infinite;
+  margin-left: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2em;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1><span class="icon">🍫</span> CocoaChain</h1>
+    <p class="subtitle">Blockchain-Powered Cocoa Trading Platform</p>
+  </header>
+
+  <div id="notification" class="notification"></div>
+
+  <div class="card card-full">
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-value" id="totalBlocks">0</div>
+        <div class="stat-label">Total Blocks</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalSales">0</div>
+        <div class="stat-label">Total Sales</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="pendingCount">0</div>
+        <div class="stat-label">Pending Sales</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalRevenue">$0</div>
+        <div class="stat-label">Total Revenue</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalBuyers">0</div>
+        <div class="stat-label">Total Buyers</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="totalSellers">0</div>
+        <div class="stat-label">Total Sellers</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🔐</span> Seller Registration</h2>
+      
+      <div class="form-group">
+        <label>Current Seller ID</label>
+        <input id="displaySellerId" type="text" readonly placeholder="Click 'Register' to get your auto-generated ID" style="background-color: #1a1a2e; cursor: not-allowed;" />
+        <small style="color: #888; margin-top: 5px; display: block;">Auto-generated from your wallet address</small>
+      </div>
+
+      <div class="button-group">
+        <button class="btn-primary" onclick="registerSeller()">
+          <span class="icon">📋</span> Register as Seller
+        </button>
+        <button class="btn-secondary" onclick="copySellerId()" id="copyBtn" style="display: none;">
+          <span class="icon">📋</span> Copy Seller ID
+        </button>
+      </div>
+      
+      <div id="registrationStatus" style="margin-top: 15px; padding: 10px; border-radius: 5px; display: none;"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📝</span> Record New Sale</h2>
+      
+      <div class="form-group">
+        <label for="sellerId">Seller ID *</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input id="sellerId" type="text" placeholder="Your registered seller ID will appear here" readonly style="background-color: #1a1a2e; flex: 1;" />
+          <button class="btn-secondary" onclick="useSellerId()" style="padding: 8px 12px; white-space: nowrap;">Use ID</button>
+        </div>
+        <div class="error-message" id="sellerIdError">Seller ID is required - register first!</div>
+      </div>
+
+      <div class="form-group">
+        <label for="buyerName">Buyer Name *</label>
+        <input id="buyerName" type="text" placeholder="Enter buyer name" />
+        <div class="error-message" id="buyerNameError">Buyer name is required</div>
+      </div>
+
+      <div class="form-group">
+        <label for="quantityKg">Quantity (Kg) *</label>
+        <input id="quantityKg" type="number" step="0.01" min="0.01" placeholder="Enter quantity in kilograms" />
+        <div class="error-message" id="quantityKgError">Quantity must be greater than 0</div>
+      </div>
+
+      <div class="form-group">
+        <label for="price">Price ($) *</label>
+        <input id="price" type="number" step="0.01" min="0.01" placeholder="Enter price" />
+        <div class="error-message" id="priceError">Price must be greater than 0</div>
+      </div>
+
+      <div class="button-group">
+        <button class="btn-primary" onclick="recordSale()" id="recordBtn">
+          <span class="icon">✓</span> Record Sale
+        </button>
+        <button class="btn-danger" onclick="clearForm()">
+          <span class="icon">✕</span> Clear Form
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">⏳</span> Pending Sales</h2>
+      <div id="pendingSales" class="pending-sales"></div>
+      <div class="button-group">
+        <button class="btn-secondary" onclick="mineSales()" id="mineBtn">
+          <span class="icon">⛏</span> Mine Block
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">📊</span> Analytics</h2>
+      <div style="height: 300px;">
+        <canvas id="salesChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🏆</span> Top Sellers</h2>
+      <div id="topSellers" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2 class="card-title"><span class="icon">👥</span> All Buyers</h2>
+      <div id="allBuyers" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title"><span class="icon">🏪</span> All Sellers</h2>
+      <div id="allSellers" style="max-height: 300px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <div class="card card-full">
+    <h2 class="card-title"><span class="icon">⛓</span> Blockchain Explorer</h2>
+    <div class="button-group" style="margin-bottom: 20px;">
+      <button class="btn-view" onclick="loadBlockchain()">
+        <span class="icon">🔄</span> Refresh Blockchain
+      </button>
+      <button class="btn-info" onclick="exportData()">
+        <span class="icon">💾</span> Export Data
+      </button>
+      <button class="btn-danger" onclick="resetBlockchain()">
+        <span class="icon">⚠</span> Reset Blockchain
+      </button>
+    </div>
+    <div id="blockchainView" class="block-container"></div>
+  </div>
+</div>
+
+<script>
+// Storage API wrapper using localStorage
+window.storage = {
+  async get(key) {
+    try {
+      const value = localStorage.getItem(key);
+      return value ? { value } : null;
+    } catch (error) {
+      console.error('Storage get error:', error);
+      return null;
+    }
+  },
+  async set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.error('Storage set error:', error);
+    }
+  }
+};
+
+// Blockchain Class
+class Block {
+  constructor(index, timestamp, transactions, previousHash = '') {
+    this.index = index;
+    this.timestamp = timestamp;
+    this.transactions = transactions;
+    this.previousHash = previousHash;
+    this.hash = this.calculateHash();
+    this.nonce = 0;
+  }
+
+  calculateHash() {
+    return CryptoJS.SHA256(
+      this.index +
+      this.previousHash +
+      this.timestamp +
+      JSON.stringify(this.transactions) +
+      this.nonce
+    ).toString();
+  }
+
+  mineBlock(difficulty) {
+    while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+      this.nonce++;
+      this.hash = this.calculateHash();
+    }
+  }
+}
+
+class Blockchain {
+  constructor() {
+    this.chain = [this.createGenesisBlock()];
+    this.difficulty = 2;
+    this.pendingTransactions = [];
+  }
+
+  createGenesisBlock() {
+    return new Block(0, new Date().toISOString(), [], "0");
+  }
+
+  getLatestBlock() {
+    return this.chain[this.chain.length - 1];
+  }
+
+  addTransaction(transaction) {
+    this.pendingTransactions.push(transaction);
+  }
+
+  minePendingTransactions() {
+    if (this.pendingTransactions.length === 0) {
+      return false;
+    }
+
+    const block = new Block(
+      this.chain.length,
+      new Date().toISOString(),
+      this.pendingTransactions,
+      this.getLatestBlock().hash
+    );
+
+    block.mineBlock(this.difficulty);
+    this.chain.push(block);
+    this.pendingTransactions = [];
+    return true;
+  }
+
+  isChainValid() {
+    for (let i = 1; i < this.chain.length; i++) {
+      const currentBlock = this.chain[i];
+      const previousBlock = this.chain[i - 1];
+
+      if (currentBlock.hash !== currentBlock.calculateHash()) {
+        return false;
+      }
+
+      if (currentBlock.previousHash !== previousBlock.hash) {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+// Initialize blockchain
+let cocoaChain = new Blockchain();
+
+// Load from storage on startup
+async function loadFromStorage() {
+  try {
+    const result = await window.storage.get('cocoachain_data');
+    if (result && result.value) {
+      const data = JSON.parse(result.value);
+      cocoaChain.chain = data.chain.map(blockData => {
+        const block = new Block(
+          blockData.index,
+          blockData.timestamp,
+          blockData.transactions,
+          blockData.previousHash
+        );
+        block.hash = blockData.hash;
+        block.nonce = blockData.nonce;
+        return block;
+      });
+      cocoaChain.pendingTransactions = data.pendingTransactions || [];
+    }
+  } catch (error) {
+    console.log('No previous data found, starting fresh');
+  }
+  updateUI();
+}
+
+// Save to storage
+async function saveToStorage() {
+  try {
+    const data = {
+      chain: cocoaChain.chain,
+      pendingTransactions: cocoaChain.pendingTransactions
+    };
+    await window.storage.set('cocoachain_data', JSON.stringify(data));
+  } catch (error) {
+    showNotification('Failed to save data', 'error');
+  }
+}
+
+// Validation
+function validateForm() {
+  let isValid = true;
+  const fields = ['sellerId', 'buyerName', 'quantityKg', 'price'];
+  
+  fields.forEach(field => {
+    const input = document.getElementById(field);
+    const error = document.getElementById(field + 'Error');
+    const value = input.value.trim();
+    
+    if (!value || (field === 'quantityKg' && parseFloat(value) <= 0) || (field === 'price' && parseFloat(value) <= 0)) {
+      input.classList.add('error');
+      error.classList.add('show');
+      isValid = false;
+    } else {
+      input.classList.remove('error');
+      error.classList.remove('show');
+    }
+  });
+  
+  return isValid;
+}
+
+// Clear form
+function clearForm() {
+  ['sellerId', 'buyerName', 'quantityKg', 'price'].forEach(field => {
+    const input = document.getElementById(field);
+    const error = document.getElementById(field + 'Error');
+    input.value = '';
+    input.classList.remove('error');
+    error.classList.remove('show');
+  });
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+  const notification = document.getElementById('notification');
+  notification.textContent = message;
+  notification.className = `notification ${type} show`;
+  
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
+}
+
+// Register as seller and get auto-generated seller ID
+async function registerSeller() {
+  try {
+    const registerBtn = event.target;
+    registerBtn.disabled = true;
+    registerBtn.innerHTML = '<span class="icon">⏳</span> Registering...';
+
+    // Call the API to register
+    const response = await fetch('http://localhost:3001/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Registration failed');
+    }
+
+    const data = await response.json();
+    const sellerId = data.sellerId;
+
+    // Store the seller ID
+    localStorage.setItem('currentSellerId', sellerId);
+    
+    // Update the display
+    document.getElementById('displaySellerId').value = sellerId;
+    document.getElementById('sellerId').value = sellerId;
+    document.getElementById('copyBtn').style.display = 'inline-block';
+
+    // Show success message
+    const statusDiv = document.getElementById('registrationStatus');
+    statusDiv.innerHTML = `✅ Seller ID generated: <strong>${sellerId}</strong>`;
+    statusDiv.style.background = 'rgba(34, 197, 94, 0.2)';
+    statusDiv.style.border = '1px solid #22c55e';
+    statusDiv.style.color = '#86efac';
+    statusDiv.style.display = 'block';
+
+    showNotification(`Welcome! Your seller ID is ${sellerId}`, 'success');
+
+  } catch (error) {
+    console.error('Registration error:', error);
+    const statusDiv = document.getElementById('registrationStatus');
+    statusDiv.innerHTML = `❌ Error: ${error.message}. Make sure the API is running on localhost:3001`;
+    statusDiv.style.background = 'rgba(239, 68, 68, 0.2)';
+    statusDiv.style.border = '1px solid #ef4444';
+    statusDiv.style.color = '#fca5a5';
+    statusDiv.style.display = 'block';
+    showNotification('Registration failed. Check console for details.', 'error');
+  } finally {
+    event.target.disabled = false;
+    event.target.innerHTML = '<span class="icon">📋</span> Register as Seller';
+  }
+}
+
+// Copy seller ID to clipboard
+function copySellerId() {
+  const sellerId = document.getElementById('displaySellerId').value;
+  if (sellerId && sellerId.startsWith('SELLER_')) {
+    navigator.clipboard.writeText(sellerId).then(() => {
+      showNotification(`Copied: ${sellerId}`, 'success');
+    });
+  }
+}
+
+// Use seller ID in form
+function useSellerId() {
+  const sellerId = document.getElementById('displaySellerId').value;
+  if (sellerId && sellerId.startsWith('SELLER_')) {
+    document.getElementById('sellerId').value = sellerId;
+    document.getElementById('buyerName').focus();
+    showNotification('Seller ID set! Now fill in buyer details.', 'info');
+  } else {
+    showNotification('Please register first to get a seller ID', 'error');
+  }
+}
+
+// Record sale
+async function recordSale() {
+  if (!validateForm()) {
+    showNotification('Please fill all fields correctly', 'error');
+    return;
+  }
+
+  const transaction = {
+    sellerId: document.getElementById('sellerId').value.trim(),
+    buyerName: document.getElementById('buyerName').value.trim(),
+    quantityKg: parseFloat(document.getElementById('quantityKg').value),
+    price: parseFloat(document.getElementById('price').value),
+    timestamp: new Date().toISOString()
+  };
+
+  // Save to local blockchain
+  cocoaChain.addTransaction(transaction);
+  await saveToStorage();
+
+  // ALSO send to smart contract via API
+  try {
+    const response = await fetch('http://localhost:3001/sale', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sellerId: transaction.sellerId,
+        buyerName: transaction.buyerName,
+        quantityKg: transaction.quantityKg,
+        price: transaction.price
+      })
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      showNotification(`Sale recorded on blockchain! TX: ${result.transactionHash.slice(0, 10)}...`, 'success');
+    } else {
+      const error = await response.json();
+      showNotification(`API Warning: ${error.error}`, 'warning');
+    }
+  } catch (err) {
+    console.warn('API not available:', err.message);
+    showNotification('Saved locally (API unavailable)', 'info');
+  }
+
+  clearForm();
+  updateUI();
+}
+
+// Mine sales
+async function mineSales() {
+  const btn = document.getElementById('mineBtn');
+  
+  if (cocoaChain.pendingTransactions.length === 0) {
+    showNotification('No pending sales to mine', 'info');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="icon">⛏</span> Mining...<span class="loader"></span>';
+  
+  setTimeout(async () => {
+    const success = cocoaChain.minePendingTransactions();
+    
+    if (success) {
+      await saveToStorage();
+      showNotification('Block mined successfully!', 'success');
+      updateUI();
+    }
+    
+    btn.disabled = false;
+    btn.innerHTML = '<span class="icon">⛏</span> Mine Block';
+  }, 1000);
+}
+
+// Update UI
+function updateUI() {
+  updateStats();
+  updatePendingSales();
+  updateChart();
+  updateTopSellers();
+  updateAllBuyers();
+  updateAllSellers();
+}
+
+// Update stats
+function updateStats() {
+  const totalBlocks = cocoaChain.chain.length - 1; // Exclude genesis block
+  let totalSales = 0;
+  let totalRevenue = 0;
+  const uniqueSellers = new Set();
+  const uniqueBuyers = new Set();
+
+  cocoaChain.chain.forEach(block => {
+    totalSales += block.transactions.length;
+    block.transactions.forEach(tx => {
+      totalRevenue += tx.price * tx.quantityKg;
+      uniqueSellers.add(tx.sellerId);
+      uniqueBuyers.add(tx.buyerName);
+    });
+  });
+
+  document.getElementById('totalBlocks').textContent = totalBlocks;
+  document.getElementById('totalSales').textContent = totalSales;
+  document.getElementById('pendingCount').textContent = cocoaChain.pendingTransactions.length;
+  document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toFixed(2);
+  document.getElementById('totalBuyers').textContent = uniqueBuyers.size;
+  document.getElementById('totalSellers').textContent = uniqueSellers.size;
+}
+function updatePendingSales() {
+  const container = document.getElementById('pendingSales');
+  
+  if (cocoaChain.pendingTransactions.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <p>No pending sales</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = cocoaChain.pendingTransactions.map((sale, index) => `
+    <div class="sale-item">
+      <div class="sale-info">
+        <div><strong>Seller:</strong> ${sale.sellerId}</div>
+        <div><strong>Buyer:</strong> ${sale.buyerName}</div>
+        <div><strong>Quantity:</strong> ${sale.quantityKg} Kg | <strong>Price:</strong> $${sale.price}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Update chart
+let salesChart = null;
+function updateChart() {
+  const ctx = document.getElementById('salesChart');
+  if (!ctx) return;
+  
+  const blockLabels = [];
+  const salesData = [];
+  
+  cocoaChain.chain.forEach((block, index) => {
+    if (index > 0) { // Skip genesis block
+      blockLabels.push(`Block ${block.index}`);
+      salesData.push(block.transactions.length);
+    }
+  });
+
+  if (salesChart) {
+    salesChart.destroy();
+  }
+
+  salesChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: blockLabels.length > 0 ? blockLabels : ['No Data'],
+      datasets: [{
+        label: 'Sales per Block',
+        data: salesData.length > 0 ? salesData : [0],
+        backgroundColor: 'rgba(124, 58, 237, 0.6)',
+        borderColor: 'rgba(124, 58, 237, 1)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 1.5,
+      plugins: {
+        legend: {
+          labels: { color: '#e2e8f0' }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { 
+            color: '#94a3b8',
+            stepSize: 1
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.1)' }
+        },
+        x: {
+          ticks: { color: '#94a3b8' },
+          grid: { color: 'rgba(255, 255, 255, 0.1)' }
+        }
+      }
+    }
+  });
+}
+
+// Update top sellers
+function updateTopSellers() {
+  const sellerStats = {};
+  
+  cocoaChain.chain.forEach(block => {
+    block.transactions.forEach(tx => {
+      if (!sellerStats[tx.sellerId]) {
+        sellerStats[tx.sellerId] = { sales: 0, revenue: 0, quantity: 0 };
+      }
+      sellerStats[tx.sellerId].sales++;
+      sellerStats[tx.sellerId].revenue += tx.price * tx.quantityKg;
+      sellerStats[tx.sellerId].quantity += tx.quantityKg;
+    });
+  });
+
+  const topSellers = Object.entries(sellerStats)
+    .sort((a, b) => b[1].revenue - a[1].revenue)
+    .slice(0, 5);
+
+  const container = document.getElementById('topSellers');
+  
+  if (topSellers.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">👤</div>
+        <p>No sales data yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = topSellers.map(([seller, stats], index) => `
+    <div class="sale-item">
+      <div style="font-size: 1.5em; margin-right: 15px;">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅'}</div>
+      <div class="sale-info">
+        <div><strong>${seller}</strong></div>
+        <div>${stats.sales} sales | ${stats.quantity.toFixed(2)} Kg | ${stats.revenue.toFixed(2)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Update all buyers
+function updateAllBuyers() {
+  const buyerStats = {};
+  
+  cocoaChain.chain.forEach(block => {
+    block.transactions.forEach(tx => {
+      if (!buyerStats[tx.buyerName]) {
+        buyerStats[tx.buyerName] = { purchases: 0, spent: 0, quantity: 0 };
+      }
+      buyerStats[tx.buyerName].purchases++;
+      buyerStats[tx.buyerName].spent += tx.price * tx.quantityKg;
+      buyerStats[tx.buyerName].quantity += tx.quantityKg;
+    });
+  });
+
+  const allBuyers = Object.entries(buyerStats)
+    .sort((a, b) => b[1].spent - a[1].spent);
+
+  const container = document.getElementById('allBuyers');
+  
+  if (allBuyers.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🛒</div>
+        <p>No buyers yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = allBuyers.map(([buyer, stats]) => `
+    <div class="sale-item">
+      <div class="sale-info">
+        <div><strong>${buyer}</strong></div>
+        <div>${stats.purchases} purchases | ${stats.quantity.toFixed(2)} Kg | ${stats.spent.toFixed(2)} spent</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Update all sellers
+function updateAllSellers() {
+  const sellerStats = {};
+  
+  cocoaChain.chain.forEach(block => {
+    block.transactions.forEach(tx => {
+      if (!sellerStats[tx.sellerId]) {
+        sellerStats[tx.sellerId] = { sales: 0, revenue: 0, quantity: 0 };
+      }
+      sellerStats[tx.sellerId].sales++;
+      sellerStats[tx.sellerId].revenue += tx.price * tx.quantityKg;
+      sellerStats[tx.sellerId].quantity += tx.quantityKg;
+    });
+  });
+
+  const allSellers = Object.entries(sellerStats)
+    .sort((a, b) => b[1].revenue - a[1].revenue);
+
+  const container = document.getElementById('allSellers');
+  
+  if (allSellers.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🏪</div>
+        <p>No sellers yet</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = allSellers.map(([seller, stats]) => `
+    <div class="sale-item">
+      <div class="sale-info">
+        <div><strong>${seller}</strong></div>
+        <div>${stats.sales} sales | ${stats.quantity.toFixed(2)} Kg | ${stats.revenue.toFixed(2)} earned</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Load blockchain view
+function loadBlockchain() {
+  const container = document.getElementById('blockchainView');
+  
+  // Try to fetch from API first
+  fetch('http://localhost:3001/blockchain')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Show API blockchain info
+        container.innerHTML = `
+          <div class="block-card">
+            <div class="block-header">
+              <div class="block-index">Smart Contract Blockchain</div>
+              <div class="block-timestamp">Live Data</div>
+            </div>
+            <div class="block-hash">Contract Address: ${data.blockchain.contractAddress}</div>
+            <div class="block-transactions">
+              <strong>Statistics:</strong>
+              <div class="transaction">
+                Total Sales: ${data.blockchain.totalSales}
+              </div>
+              <div class="transaction">
+                Total Sellers: ${data.blockchain.totalSellers}
+              </div>
+              <div class="transaction">
+                Total Cocoa Sold: ${data.blockchain.totalCocoaSold} kg
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Then also show local blocks
+        if (cocoaChain.chain.length > 1) {
+          container.innerHTML += `
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #4ade80;">
+              <h3 style="margin-bottom: 15px;">Local Blockchain Blocks</h3>
+              ${cocoaChain.chain.slice(1).reverse().map(block => `
+                <div class="block-card">
+                  <div class="block-header">
+                    <div class="block-index">Block #${block.index}</div>
+                    <div class="block-timestamp">${new Date(block.timestamp).toLocaleString()}</div>
+                  </div>
+                  <div class="block-hash">Hash: ${block.hash}</div>
+                  <div class="block-hash">Previous: ${block.previousHash}</div>
+                  <div class="block-transactions">
+                    <strong>${block.transactions.length} Transaction(s):</strong>
+                    ${block.transactions.map(tx => `
+                      <div class="transaction">
+                        <strong>${tx.sellerId}</strong> → <strong>${tx.buyerName}</strong><br>
+                        ${tx.quantityKg} Kg @ $${tx.price} = $${(tx.quantityKg * tx.price).toFixed(2)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+        showNotification('Blockchain loaded from API', 'success');
+      }
+    })
+    .catch(err => {
+      console.warn('API not available, showing local blockchain:', err.message);
+      // Fallback to local blockchain
+      if (cocoaChain.chain.length === 1) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">⛓</div>
+            <p>No blocks mined yet</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = cocoaChain.chain.slice(1).reverse().map(block => `
+        <div class="block-card">
+          <div class="block-header">
+            <div class="block-index">Block #${block.index}</div>
+            <div class="block-timestamp">${new Date(block.timestamp).toLocaleString()}</div>
+          </div>
+          <div class="block-hash">Hash: ${block.hash}</div>
+          <div class="block-hash">Previous: ${block.previousHash}</div>
+          <div class="block-transactions">
+            <strong>${block.transactions.length} Transaction(s):</strong>
+            ${block.transactions.map(tx => `
+              <div class="transaction">
+                <strong>${tx.sellerId}</strong> → <strong>${tx.buyerName}</strong><br>
+                ${tx.quantityKg} Kg @ $${tx.price} = $${(tx.quantityKg * tx.price).toFixed(2)}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      showNotification('Blockchain loaded from local storage', 'info');
+    });
+}
+
+// Export data
+function exportData() {
+  const data = {
+    chain: cocoaChain.chain,
+    pendingTransactions: cocoaChain.pendingTransactions,
+    exportDate: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cocoachain_export_${Date.now()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  showNotification('Data exported successfully', 'success');
+}
+
+// Reset blockchain
+async function resetBlockchain() {
+  if (!confirm('Are you sure you want to reset the blockchain? This cannot be undone.')) {
+    return;
+  }
+
+  cocoaChain = new Blockchain();
+  await saveToStorage();
+  updateUI();
+  document.getElementById('blockchainView').innerHTML = '';
+  
+  showNotification('Blockchain reset successfully', 'info');
+}
+
+// Initialize
+loadFromStorage();
+loadBlockchain();
+updateUI();
+
+// Restore seller ID if previously registered
+const savedSellerId = localStorage.getItem('currentSellerId');
+if (savedSellerId && savedSellerId.startsWith('SELLER_')) {
+  document.getElementById('displaySellerId').value = savedSellerId;
+  document.getElementById('sellerId').value = savedSellerId;
+  document.getElementById('copyBtn').style.display = 'inline-block';
+  const statusDiv = document.getElementById('registrationStatus');
+  statusDiv.innerHTML = `✅ Loaded seller ID: <strong>${savedSellerId}</strong>`;
+  statusDiv.style.background = 'rgba(34, 197, 94, 0.2)';
+  statusDiv.style.border = '1px solid #22c55e';
+  statusDiv.style.color = '#86efac';
+  statusDiv.style.display = 'block';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "cocoa-chain",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@types/node": "^22.19.7",
+    "hardhat": "^2.14.0",
+    "typescript": "~5.8.0"
+  },
+  "dependencies": {
+    "ethers": "^6.16.0"
+  }
+}
